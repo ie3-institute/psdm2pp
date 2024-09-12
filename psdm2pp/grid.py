@@ -18,7 +18,6 @@ class UuidIdxMaps:
 def convert_grid(
     grid: RawGridContainer, name: str = "", s_rated_mva: float = 1
 ) -> Tuple[pp.pandapowerNet, UuidIdxMaps]:
-
     uuid_idx = UuidIdxMaps()
 
     net = pp.create_empty_network(
@@ -29,6 +28,8 @@ def convert_grid(
     for uuid, node in grid.nodes.data.iterrows():
         idx = convert_node(net, node)
         uuid_idx.node[uuid] = idx  # type: ignore
+        if node["slack"]:
+            pp.create_ext_grid(net, idx, vm_pu=1.0, name="Slack")
 
     for uuid, line in grid.lines.data.iterrows():
         idx = convert_line(net, line, uuid_idx.node)
@@ -141,7 +142,6 @@ def convert_transformer(net: pp.pandapowerNet, trafo_data: pd.Series, uuid_idx: 
 def trafo_param_conversion(
     r_sc: float, x_sc: float, s_rated: float, v_rated_a: float, g_m: float, b_m: float
 ):
-
     # Circuit impedance
     z_sc = math.sqrt(r_sc**2 + x_sc**2)
 
