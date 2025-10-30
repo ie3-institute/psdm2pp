@@ -64,7 +64,7 @@ jobs:
 
       - name: Install PostgreSQL (Windows)
         if: matrix.os == 'windows-latest'
-        run: choco install postgresql --version=14.3 --no-progress
+        run: choco install postgresql --yes --no-progress
 
       - name: Install Poetry
         uses: snok/install-poetry@v1
