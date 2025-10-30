@@ -13,10 +13,10 @@ jobs:
       #----------------------------------------------
       #       check-out repo and set-up python
       #----------------------------------------------
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
-          python-version: '3.10'
+          python-version: '3.11'
       #----------------------------------------------
       #        load pip cache if cache exists
       #----------------------------------------------
@@ -39,7 +39,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: ['ubuntu-latest', 'macos-latest']
+        os: ["ubuntu-latest", "macos-latest", "windows-latest"]
         python-version: ['3.11']
     runs-on: ${{ matrix.os }}
     steps:
@@ -47,20 +47,24 @@ jobs:
       #       check-out repo and set-up python
       #----------------------------------------------
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install PostgreSQL Development Tools
+      - name: Install PostgreSQL Development Tools (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update && sudo apt-get install -y libpq-dev
 
-      - name: Install PostgreSQL
+      - name: Install PostgreSQL (macOS)
         if: matrix.os == 'macos-latest'
         run: brew install postgresql
+
+      - name: Install PostgreSQL (Windows)
+        if: matrix.os == 'windows-latest'
+        run: choco install postgresql --version=14.3 --no-progress
 
       - name: Install Poetry
         uses: snok/install-poetry@v1
@@ -71,12 +75,12 @@ jobs:
       #       load cached venv if cache exists
       #----------------------------------------------
       - name: Cache Poetry dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cache/pypoetry
             .venv
-          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          key: poetry-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
             poetry-${{ runner.os }}-
       #----------------------------------------------
@@ -85,7 +89,20 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-interaction --no-root
 
-      - name: Run tests
+      - name: Run tests (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           source .venv/bin/activate
+          pytest tests/
+
+      - name: Run tests (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          source .venv/bin/activate
+          pytest tests/
+
+      - name: Run tests (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          call .venv\Scripts\activate
           pytest tests/
