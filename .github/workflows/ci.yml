@@ -68,17 +68,32 @@ jobs:
       - name: Init PostgreSQL (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          $candidates = @(
-            "C:\Program Files\PostgreSQL\16\bin",
-            "C:\Program Files\PostgreSQL\15\bin",
-            "C:\Program Files\PostgreSQL\14\bin"
+          echo "Searching for PostgreSQL installation..."
+          CANDIDATES=(
+            "/c/Program Files/PostgreSQL/16/bin"
+            "/c/Program Files/PostgreSQL/15/bin"
+            "/c/Program Files/PostgreSQL/14/bin"
+            "/c/Program Files/PostgreSQL/13/bin"
           )
-          foreach ($c in $candidates) {
-            if (Test-Path "$c\initdb.exe") {
-              "PGBIN=$c" | Out-File -FilePath $env:GITHUB_ENV -Append
+          
+          FOUND=""
+          
+          for path in "${CANDIDATES[@]}"; do
+            if [ -x "$path/psql.exe" ]; then
+              FOUND="$path"
               break
-            }
-          }
+            fi
+          done
+          
+          if [ -n "$FOUND" ]; then
+            echo "PostgreSQL binaries found at: $FOUND"
+            echo "PGBIN=$FOUND" >> "$GITHUB_ENV"
+            echo "PSQL=$FOUND/psql.exe" >> "$GITHUB_ENV"
+            "$FOUND/psql.exe" --version
+          else
+            echo "No PostgreSQL installation found on this runner."
+            echo "PGBIN=" >> "$GITHUB_ENV"
+          fi
 
       - name: Install Poetry
         uses: snok/install-poetry@v1
