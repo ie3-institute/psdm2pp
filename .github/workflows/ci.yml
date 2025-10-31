@@ -77,7 +77,7 @@ jobs:
       #----------------------------------------------
       #       load cached venv if cache exists
       #----------------------------------------------
-      - name: Cache Poetry dependencies
+      - name: Cache Venv
         continue-on-error: true
         uses: actions/cache@v4
         with:
