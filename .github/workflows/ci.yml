@@ -65,9 +65,11 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: brew install postgresql
 
-      - name: Install PostgreSQL (Windows)
+      - name: Init PostgreSQL (Windows)
         if: matrix.os == 'windows-latest'
-        run: choco install postgresql --yes --no-progress
+        run: |
+          "C:\Program Files\PostgreSQL\16\bin\initdb.exe" -D C:\pgdata -U postgres -A trust
+          "C:\Program Files\PostgreSQL\16\bin\pg_ctl.exe" -D C:\pgdata -l C:\pglog start
 
       - name: Install Poetry
         uses: snok/install-poetry@v1
