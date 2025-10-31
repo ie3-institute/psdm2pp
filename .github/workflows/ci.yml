@@ -68,8 +68,17 @@ jobs:
       - name: Init PostgreSQL (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          "C:\Program Files\PostgreSQL\16\bin\initdb.exe" -D C:\pgdata -U postgres -A trust
-          "C:\Program Files\PostgreSQL\16\bin\pg_ctl.exe" -D C:\pgdata -l C:\pglog start
+          $candidates = @(
+            "C:\Program Files\PostgreSQL\16\bin",
+            "C:\Program Files\PostgreSQL\15\bin",
+            "C:\Program Files\PostgreSQL\14\bin"
+          )
+          foreach ($c in $candidates) {
+            if (Test-Path "$c\initdb.exe") {
+              "PGBIN=$c" | Out-File -FilePath $env:GITHUB_ENV -Append
+              break
+            }
+          }
 
       - name: Install Poetry
         uses: snok/install-poetry@v1
