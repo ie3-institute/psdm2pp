@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "<3.12,>3.11"
-pypsdm = "^0.0.3"
+pypsdm = "^0.0.8"
 pandapower = "^2.14.11"
 simbench = "^1.5.3"
 
